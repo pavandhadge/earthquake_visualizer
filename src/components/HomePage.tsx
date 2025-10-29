@@ -1,126 +1,102 @@
 // src/components/HomePage.tsx
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { db } from "../db";
-import { NoteViewer } from "./NoteViewer";
+import { Header } from "./Header";
+import { NotesDashboard } from "./NotesDashboard";
+import { useState } from "react";
 
 export function HomePage() {
-  const [notes, setNotes] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedNote, setSelectedNote] = useState<any | null>(null);
+  const [showDashboard, setShowDashboard] = useState(false);
 
-  const loadNotes = async () => {
-    setLoading(true);
-    const result = await db.notes.orderBy("timestamp").reverse().toArray();
-    setNotes(result);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadNotes();
-  }, []);
-
-  const handleDelete = async (id: number) => {
-    await db.notes.delete(id);
-    loadNotes();
-  };
-
-  const exportNotes = async () => {
-    const result = await db.notes.toArray();
-    const json = JSON.stringify(result, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `earthquake-notes-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  // Show full note
-  if (selectedNote) {
-    return (
-      <NoteViewer
-        title={selectedNote.title}
-        content={selectedNote.content}
-        timestamp={selectedNote.timestamp}
-        onBack={() => setSelectedNote(null)}
-      />
-    );
+  if (showDashboard) {
+    return <NotesDashboard onBack={() => setShowDashboard(false)} />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 p-6">
-      <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-        {/* Left */}
-        <div className="bg-white p-8 rounded-2xl shadow-xl">
-          <h1 className="text-4xl font-bold text-blue-900 mb-4">
+    <>
+      {/*<Header />*/}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 flex flex-col items-center justify-center p-6">
+        <div className="max-w-6xl w-full text-center mb-16">
+          <h1 className="text-6xl md:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-600 mb-6">
             Earthquake Visualizer
           </h1>
-          <p className="text-lg text-gray-700 mb-6">
-            Real-time data + local notes.
+          <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto">
+            Explore real-time USGS seismic data with interactive maps and local
+            note-taking.
           </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl w-full mb-16">
+          {[
+            {
+              icon: "Globe",
+              title: "Live USGS Data",
+              desc: "Real-time earthquake updates",
+            },
+            {
+              icon: "Map",
+              title: "Interactive Map",
+              desc: "Zoom, filter, explore",
+            },
+            {
+              icon: "Pen",
+              title: "Local Notes",
+              desc: "Save observations offline",
+            },
+            {
+              icon: "Download",
+              title: "Export Data",
+              desc: "JSON export anytime",
+            },
+          ].map((f, i) => (
+            <div
+              key={i}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1"
+            >
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 mx-auto">
+                <span className="text-2xl">{f.icon}</span>
+              </div>
+              <h3 className="font-bold text-lg text-blue-900 mb-2">
+                {f.title}
+              </h3>
+              <p className="text-sm text-gray-600">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA Card */}
+        <div className="max-w-md w-full">
           <Link
-            to="/map"
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700"
+            to="/notes"
+            className="block bg-white rounded-3xl shadow-2xl p-8 hover:shadow-3xl transition-all hover:scale-105"
           >
-            Open Map
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl text-white">Notes</span>
+              </div>
+              <h3 className="text-2xl font-bold text-blue-900 mb-2">
+                View Saved Notes
+              </h3>
+              <p className="text-gray-600 mb-4">
+                All notes stored locally in your browser
+              </p>
+              <span className="bg-blue-600 text-white px-8 py-3 rounded-full font-medium inline-block hover:bg-blue-700 transition">
+                Open Notes
+              </span>
+            </div>
           </Link>
         </div>
 
-        {/* Right */}
-        <div className="bg-white p-6 rounded-2xl shadow-xl">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Saved Notes</h2>
-            <button
-              onClick={exportNotes}
-              className="bg-green-600 text-white px-4 py-1 rounded text-sm hover:bg-green-700"
-            >
-              Export
-            </button>
-          </div>
-
-          {loading ? (
-            <p className="text-center text-gray-500">Loading...</p>
-          ) : notes.length === 0 ? (
-            <p className="text-center text-gray-500">No notes yet.</p>
-          ) : (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {notes.map((note) => (
-                <div
-                  key={note.id}
-                  onClick={() => setSelectedNote(note)}
-                  className="border p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm">
-                        {note.title || "Untitled"}
-                      </h3>
-                      <p className="text-xs text-gray-600 mt-1">
-                        {note.content.substring(0, 80)}
-                        {note.content.length > 80 ? "..." : ""}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        {new Date(note.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(note.id!);
-                      }}
-                      className="text-red-500 hover:text-red-700 text-xs"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Open Map Button */}
+        <div className="mt-12">
+          <Link
+            to="/map"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-teal-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:shadow-2xl transition-all hover:scale-105"
+          >
+            <span>Launch Map</span>
+          </Link>
         </div>
       </div>
-    </div>
+    </>
   );
 }

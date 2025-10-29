@@ -4,9 +4,12 @@ import { NotesProvider } from "./context/NotesContext";
 import { NotesPanel } from "./components/NotesPanel";
 import { HomePage } from "./components/HomePage";
 import MapComponent from "./components/MapComponent";
+// import { BrowserRouter } from "react-router-dom";
 import { SideBar } from "./components/SideBar";
+import { Header } from "./components/Header";
 import useEarthQuakeData from "./components/dataRequest";
 // import sqliteManager from "./db/sqliteManager";
+import { NotesDashboard } from "./components/NotesDashboard";
 import { useEffect, useState, useMemo } from "react";
 
 function MapView() {
@@ -94,11 +97,17 @@ function MapView() {
 
 export default function App() {
   return (
+    // <BrowserRouter>
     <NotesProvider>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/map" element={<MapView />} />
-      </Routes>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50">
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/map" element={<MapView />} />
+          <Route path="/notes" element={<NotesDashboard onBack={() => {}} />} />
+        </Routes>
+      </div>
     </NotesProvider>
+    // {/*</BrowserRouter>*/}
   );
 }
