@@ -5,16 +5,24 @@ import type { Note } from "../db";
 
 export function NotesDashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
+
   const [selected, setSelected] = useState<Note | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   const loadNotes = async () => {
     setLoading(true);
+
     const result = await db.notes.orderBy("timestamp").reverse().toArray();
+
     setNotes(result);
-    if (result.length > 0 && !selected) {
+
+    // Automatically select the first note on desktop if one isn't already selected
+
+    if (result.length > 0 && !selected && window.innerWidth >= 768) {
       setSelected(result[0]);
     }
+
     setLoading(false);
   };
 
@@ -24,19 +32,72 @@ export function NotesDashboard() {
 
   const handleDelete = async (id: number) => {
     await db.notes.delete(id);
+
     if (selected?.id === id) setSelected(null);
+
     loadNotes();
   };
+
+  // On mobile, if a note is selected, show only the detail view.
+
+  if (selected && window.innerWidth < 768) {
+    return (
+      <div className="p-4 sm:p-6">
+        <button
+          onClick={() => setSelected(null)}
+          className="mb-6 text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
+          </svg>
+          Back to Notes
+        </button>
+
+        <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-sm">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            {selected.title || "Untitled Note"}
+          </h1>
+
+          <p className="text-sm text-gray-500 mb-6">
+            {new Date(selected.timestamp).toLocaleString()}
+          </p>
+
+          <div className="prose prose-lg max-w-none">
+            <p className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+              {selected.content}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[calc(100vh-68px)] flex flex-col bg-gray-50">
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Notes List */}
-        <div className="w-96 bg-white border-r border-gray-200 overflow-y-auto">
+        {/* LEFT: Notes List (hidden on mobile if a note is selected) */}
+
+        <div
+          className={`w-full md:w-96 bg-white border-r border-gray-200 overflow-y-auto ${
+            selected && "hidden md:block"
+          }`}
+        >
           <div className="p-4 border-b">
             <h2 className="text-lg font-bold text-gray-800">All Notes</h2>
+
             <p className="text-sm text-gray-500">{notes.length} notes found</p>
           </div>
+
           {loading ? (
             <p className="p-6 text-center text-gray-500">Loading notes...</p>
           ) : notes.length === 0 ? (
@@ -47,23 +108,29 @@ export function NotesDashboard() {
                 <div
                   key={note.id}
                   onClick={() => setSelected(note)}
-                  className={`p-4 cursor-pointer transition-all relative ${selected?.id === note.id ? "bg-blue-50" : "hover:bg-gray-50"}`}
+                  className={`p-4 cursor-pointer transition-all relative ${
+                    selected?.id === note.id ? "bg-blue-50" : "hover:bg-gray-50"
+                  }`}
                 >
                   {selected?.id === note.id && (
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full" />
                   )}
+
                   <div className="flex justify-between items-start">
                     <div className="flex-1 pr-4">
                       <h3 className="font-semibold text-sm text-gray-900 truncate">
                         {note.title || "Untitled"}
                       </h3>
+
                       <p className="text-xs text-gray-600 mt-1 line-clamp-2 leading-relaxed">
                         {note.content}
                       </p>
+
                       <p className="text-xs text-gray-400 mt-2">
                         {new Date(note.timestamp).toLocaleDateString()}
                       </p>
                     </div>
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -80,16 +147,19 @@ export function NotesDashboard() {
           )}
         </div>
 
-        {/* RIGHT: Full Note */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        {/* RIGHT: Full Note (hidden on mobile by default) */}
+
+        <div className="flex-1 p-8 overflow-y-auto hidden md:block">
           {selected ? (
             <div className="max-w-3xl mx-auto">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {selected.title || "Untitled Note"}
               </h1>
+
               <p className="text-sm text-gray-500 mb-8">
                 {new Date(selected.timestamp).toLocaleString()}
               </p>
+
               <div className="prose prose-lg max-w-none">
                 <p className="whitespace-pre-wrap text-gray-800 leading-relaxed">
                   {selected.content}
@@ -112,6 +182,7 @@ export function NotesDashboard() {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
+
                 <p className="text-lg mt-4">Select a note to read</p>
               </div>
             </div>

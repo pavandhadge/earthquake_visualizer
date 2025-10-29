@@ -88,18 +88,19 @@ const features = [
 
 export function HomePage() {
   return (
-    <div className="min-h-[calc(100vh-68px)] bg-gray-50 flex flex-col items-center justify-center p-8">
+    <div className="min-h-[calc(100vh-68px)] bg-gray-50 flex flex-col items-center justify-center p-4 sm:p-8">
       <div className="max-w-4xl w-full text-center">
-        <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 mb-4 tracking-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 mb-4 tracking-tight">
           Earthquake Visualizer
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+
+        <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
           Explore real-time USGS seismic data with an interactive map and local
           note-taking. Built for students, researchers, and the curious.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl w-full my-16">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full my-12 sm:my-16">
         {features.map((f, i) => (
           <div
             key={i}
@@ -108,7 +109,9 @@ export function HomePage() {
             <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-teal-100 text-blue-600 rounded-xl flex items-center justify-center mb-5">
               {f.icon}
             </div>
+
             <h3 className="font-bold text-lg text-gray-800 mb-2">{f.title}</h3>
+
             <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
           </div>
         ))}
@@ -117,7 +120,7 @@ export function HomePage() {
       <div className="text-center">
         <Link
           to="/map"
-          className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-teal-600 text-white px-10 py-4 rounded-full text-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 transform"
+          className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-teal-600 text-white px-8 py-3 sm:px-10 sm:py-4 rounded-full text-base sm:text-lg font-bold shadow-lg hover:shadow-xl transition-all hover:scale-105 transform"
         >
           Launch Interactive Map
           <svg
