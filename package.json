@@ -1,5 +1,7 @@
 {
-  "name": "earthquake_visualizer",
+  "name": "earthquake-visualizer",
+  "description": "An interactive web app to visualize real-time USGS earthquake data.",
+  "author": "Your Name",
   "private": true,
   "version": "0.0.0",
   "type": "module",

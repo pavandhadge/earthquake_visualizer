@@ -1,75 +1,70 @@
-# React + TypeScript + Vite
+# Earthquake Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is an interactive web application that visualizes real-time earthquake data from the U.S. Geological Survey (USGS). It allows users to explore seismic events on an interactive map, filter data based on magnitude and depth, and take local notes on their observations.
 
-Currently, two official plugins are available:
+![Earthquake Visualizer Screenshot](https://i.imgur.com/YOUR_SCREENSHOT_URL.png) <!-- It's recommended to add a screenshot of the application -->
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## React Compiler
+- **Live Data:** Fetches and displays the latest earthquake data from the USGS feed.
+- **Interactive Map:** A Leaflet-based map to visualize earthquake locations, magnitudes, and depths.
+- **Filtering:** Filter earthquakes by magnitude and depth to focus on specific events.
+- **Local Notes:** A persistent note-taking feature that saves data in the browser's local storage.
+- **Data Export:** Export the current earthquake data to CSV or GeoJSON formats.
+- **Modern UI:** A clean, responsive, and modern user interface built with React and Tailwind CSS.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Tech Stack
 
-Note: This will impact Vite dev & build performances.
+- **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Mapping:** [Leaflet](https://leafletjs.com/) & [React-Leaflet](https://react-leaflet.js.org/)
+- **Local Storage:** [Dexie.js](https://dexie.org/) (a wrapper for IndexedDB)
+- **Routing:** [React Router](https://reactrouter.com/)
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- Node.js (v18 or later)
+- npm (or yarn/pnpm)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation & Setup
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/earthquake-visualizer.git
+    cd earthquake-visualizer
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:5173`.
+
+### Building for Production
+
+To create a production build, run:
+
+```bash
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This will create a `dist` directory with the optimized and minified files. You can preview the production build with `npm run preview`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Project Structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `public/`: Static assets.
+- `src/`: Main source code.
+  - `components/`: React components.
+  - `context/`: React context for state management (e.g., notes).
+  - `db/`: Database setup (Dexie.js).
+  - `assets/`: Static assets like images and SVGs.
+- `vite.config.ts`: Vite configuration.
+- `tailwind.config.js`: Tailwind CSS configuration.
+- `tsconfig.json`: TypeScript configuration.

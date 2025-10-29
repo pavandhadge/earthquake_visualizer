@@ -1,13 +1,64 @@
 // src/components/SideBar.tsx
-import { useState, useEffect } from "react";
+
 import type { EarthquakeGeoJson } from "../EarthquakeTypes";
 import { useNotes } from "../context/NotesContext";
 
+// --- SVG Icons for UI buttons ---
+const DownloadIcon = () => (
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+    />
+  </svg>
+);
+const NotesIcon = () => (
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 5.232z"
+    />
+  </svg>
+);
+
+/**
+ * A reusable number input component for filtering.
+ */
+function FilterInput({ label, value, setValue, placeholder }: any) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-gray-600">{label}</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => setValue(parseFloat(e.target.value) || 0)}
+        placeholder={placeholder}
+        className="w-full p-2 mt-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      />
+    </div>
+  );
+}
+
 interface Props {
-  data: EarthquakeGeoJson;
-  rawData: EarthquakeGeoJson;
+  data: EarthquakeGeoJson; // Filtered data for display
+  rawData: EarthquakeGeoJson; // Complete, unfiltered data for downloads
   selectedId: string | null;
   setSelectedId: (id: string | null) => void;
+  // Temporary state for filter inputs
   tMinMag: number;
   setTMinMag: (v: number) => void;
   tMaxMag: number;
@@ -16,16 +67,34 @@ interface Props {
   setTMinDepth: (v: number) => void;
   tMaxDepth: number;
   setTMaxDepth: (v: number) => void;
-  onApply: () => void;
-  onReset: () => void;
+  onApply: () => void; // Applies the temporary filters
+  onReset: () => void; // Resets filters to default
 }
 
+/**
+ * The main sidebar component that houses filters, actions, and the list of earthquakes.
+ */
 export function SideBar(props: Props) {
   const { data, rawData, selectedId, setSelectedId, onApply, onReset } = props;
   const quakes = data.features;
-  const { open: openNotes } = useNotes();
+  const { open: openNotes } = useNotes(); // Context hook to open the notes panel
 
-  // Download functions
+  /**
+   * A generic utility to trigger a file download in the browser.
+   */
+  const downloadFile = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  /**
+   * Formats the raw earthquake data into a CSV string and triggers a download.
+   */
   const downloadCSV = () => {
     const headers = [
       "ID",
@@ -49,6 +118,9 @@ export function SideBar(props: Props) {
     downloadFile(csv, "earthquakes.csv", "text/csv");
   };
 
+  /**
+   * Converts the raw earthquake data into a JSON string and triggers a download.
+   */
   const downloadGeoJSON = () => {
     downloadFile(
       JSON.stringify(rawData, null, 2),
@@ -57,64 +129,48 @@ export function SideBar(props: Props) {
     );
   };
 
-  const downloadFile = (content: string, filename: string, type: string) => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
-    <aside className="w-80 bg-gradient-to-b from-blue-50 to-white flex flex-col h-screen">
-      {/* Filters - Compact */}
-      <section className="p-4 bg-white border-b border-gray-200">
-        <h2 className="font-semibold text-sm mb-3">Filters</h2>
-        <div className="space-y-3">
-          <FilterSlider
-            label="Min Mag"
-            min={0}
-            max={10}
-            step={0.1}
-            {...props}
-            field="tMinMag"
-          />
-          <FilterSlider
-            label="Max Mag"
-            min={0}
-            max={10}
-            step={0.1}
-            {...props}
-            field="tMaxMag"
-          />
-          <FilterSlider
-            label="Min Depth"
-            min={-100}
-            max={1000}
-            step={10}
-            {...props}
-            field="tMinDepth"
-          />
-          <FilterSlider
-            label="Max Depth"
-            min={-100}
-            max={1000}
-            step={10}
-            {...props}
-            field="tMaxDepth"
-          />
-          <div className="flex gap-1.5">
+    <aside className="w-96 bg-white border-r border-gray-200 flex flex-col h-screen">
+      {/* Filter Section */}
+      <section className="p-4 border-b border-gray-200">
+        <h2 className="font-bold text-gray-800 mb-4">Filters</h2>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <FilterInput
+              label="Min Mag"
+              value={props.tMinMag}
+              setValue={props.setTMinMag}
+              placeholder="0"
+            />
+            <FilterInput
+              label="Max Mag"
+              value={props.tMaxMag}
+              setValue={props.setTMaxMag}
+              placeholder="10"
+            />
+            <FilterInput
+              label="Min Depth"
+              value={props.tMinDepth}
+              setValue={props.setTMinDepth}
+              placeholder="-100"
+            />
+            <FilterInput
+              label="Max Depth"
+              value={props.tMaxDepth}
+              setValue={props.setTMaxDepth}
+              placeholder="1000"
+            />
+          </div>
+          <div className="flex gap-2 pt-2">
             <button
               onClick={onApply}
-              className="flex-1 bg-blue-600 text-white py-1.5 rounded text-xs font-medium"
+              className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
             >
-              Apply
+              Apply Filters
             </button>
             <button
               onClick={onReset}
-              className="flex-1 bg-gray-200 py-1.5 rounded text-xs font-medium"
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
             >
               Reset
             </button>
@@ -122,92 +178,68 @@ export function SideBar(props: Props) {
         </div>
       </section>
 
-      {/* Download Buttons - Super Compact */}
-      <div className="px-4 py-2 bg-green-50 border-b border-gray-200 flex gap-2">
+      {/* Actions & Downloads Section */}
+      <section className="p-4 border-b border-gray-200">
         <button
-          onClick={downloadCSV}
-          className="flex-1 bg-green-600 text-white py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1"
-          title="Download CSV"
+          onClick={openNotes}
+          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-100 transition-colors"
         >
-          <span>CSV</span>
+          <NotesIcon />
+          <span>Open Notes</span>
         </button>
-        <button
-          onClick={downloadGeoJSON}
-          className="flex-1 bg-green-600 text-white py-1.5 rounded text-xs font-medium flex items-center justify-center gap-1"
-          title="Download GeoJSON"
-        >
-          <span>GeoJSON</span>
-        </button>
-      </div>
-
-      {/* Earthquake List - Takes Remaining Height */}
-      <section className="flex-1 overflow-hidden flex flex-col">
-        <div className="px-4 pt-3 pb-2 flex justify-between items-center">
-          <p className="text-xs font-semibold text-gray-700">
-            {quakes.length} events
-          </p>
-          <button
-            onClick={openNotes}
-            className="text-xs font-medium text-blue-600 hover:text-blue-800 underline"
-          >
-            Open Notes
-          </button>
-        </div>
-
-        {/* List - Hidden Overflow, No Scroll */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto px-4 pb-4 space-y-1.5">
-            {quakes.map((eq) => {
-              const p = eq.properties;
-              const isSel = eq.id === selectedId;
-              return (
-                <div
-                  key={eq.id}
-                  onClick={() => setSelectedId(isSel ? null : eq.id)}
-                  className={`p-2 rounded cursor-pointer text-xs border transition-all ${
-                    isSel
-                      ? "bg-blue-100 border-blue-500 shadow-sm"
-                      : "bg-gray-50 hover:bg-gray-100 border-transparent"
-                  }`}
-                >
-                  <div className="font-medium text-gray-900 truncate">
-                    {p.title}
-                  </div>
-                  <div className="text-gray-600 text-xs">
-                    M{p.mag?.toFixed(1)} • {eq.geometry.coordinates[2]} km
-                  </div>
-                </div>
-              );
-            })}
+      </section>
+      <section className="p-4 border-b border-gray-200">
+        <h2 className="font-bold text-gray-800 mb-3">Download Data</h2>
+        <div className="grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={downloadCSV}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+            >
+              <DownloadIcon />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={downloadGeoJSON}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
+            >
+              <DownloadIcon />
+              <span>GeoJSON</span>
+            </button>
           </div>
         </div>
       </section>
-    </aside>
-  );
-}
 
-// Compact Slider
-function FilterSlider({ label, min, max, step, ...p }: any) {
-  const field = p.field;
-  const value = p[field];
-  const setValue = p[`set${field.replace("t", "T")}`];
-  return (
-    <div className="space-y-1">
-      <label className="text-xs font-medium flex justify-between">
-        <span>{label}</span>
-        <span className="text-blue-600 font-mono">
-          {value % 1 === 0 ? value : value.toFixed(1)}
-        </span>
-      </label>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => setValue(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-gray-200 rounded-lg cursor-pointer accent-blue-600"
-      />
-    </div>
+      {/* Earthquake List Section */}
+      <section className="flex-1 overflow-hidden flex flex-col">
+        <div className="px-4 pt-4 pb-2 flex justify-between items-center">
+          <h3 className="font-bold text-gray-800">Latest Earthquakes</h3>
+          <p className="text-sm font-medium text-gray-500">
+            {quakes.length} results
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+          {quakes.map((eq) => {
+            const p = eq.properties;
+            const isSel = eq.id === selectedId;
+            return (
+              <div
+                key={eq.id}
+                onClick={() => setSelectedId(isSel ? null : eq.id)}
+                className={`p-3 rounded-lg cursor-pointer border-2 transition-all ${isSel ? "bg-blue-50 border-blue-500 shadow-sm" : "bg-white border-gray-200 hover:border-blue-400 hover:bg-blue-50"}`}
+              >
+                <div className="font-semibold text-sm text-gray-900 truncate">
+                  {p.title}
+                </div>
+                <div className="text-xs text-gray-600 mt-1">
+                  M {p.mag?.toFixed(1)} • {eq.geometry.coordinates[2]} km depth
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </aside>
   );
 }

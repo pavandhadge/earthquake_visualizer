@@ -6,10 +6,13 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import { db } from "../db"; // ← Import Note here
+import { db } from "../db";
 import type { Note } from "../db";
+
+// Defines the possible states for the notes panel UI.
 type PanelState = "open" | "minimized" | "closed";
 
+// Defines the shape of the context data and functions.
 interface NotesContextType {
   state: PanelState;
   notes: string;
@@ -22,13 +25,23 @@ interface NotesContextType {
   close: () => void;
 }
 
+// Create the React context.
 const NotesContext = createContext<NotesContextType | undefined>(undefined);
 
+/**
+ * The provider component that wraps the application to make notes state available.
+ * It manages the state of the notes panel, the content of the current note,
+ * and provides functions to interact with the state.
+ */
 export function NotesProvider({ children }: { children: ReactNode }) {
+  // State for the panel's visibility (open, minimized, or closed).
   const [state, setState] = useState<PanelState>("closed");
+  // State for the content of the note currently being edited.
   const [notes, setNotes] = useState("");
+  // State for the title of the note currently being edited.
   const [title, setTitle] = useState("");
 
+  // On initial load, fetch the most recent note to populate the editor.
   useEffect(() => {
     db.notes
       .orderBy("timestamp")
@@ -44,25 +57,26 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       .catch(console.error);
   }, []);
 
-  // In saveNote function — ONLY CLEAR INPUT, DON'T MINIMIZE
-  // src/context/NotesContext.tsx
+  /**
+   * Saves the current note (title and content) to the IndexedDB database.
+   * Does not save if the note content is empty.
+   */
   const saveNote = async () => {
-    if (!notes.trim()) return;
+    if (!notes.trim()) return; // Don't save empty notes
     try {
       await db.notes.add({
-        title: title || "Untitled",
+        title: title || "Untitled", // Default title if none is provided
         content: notes,
         timestamp: new Date(),
       });
-      // DO NOT CLEAR INPUT
-      // setNotes("");
-      // setTitle("");
-      // Just show success
-      alert("Note saved!");
+      alert("Note saved!"); // Provide user feedback
     } catch (err) {
-      console.error("Save failed:", err);
+      console.error("Failed to save note:", err);
+      alert("Error: Could not save note.");
     }
   };
+
+  // Action functions to update the panel's state.
   const open = () => setState("open");
   const minimize = () => setState("minimized");
   const close = () => setState("closed");
@@ -86,8 +100,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Custom hook to easily access the NotesContext from any component.
+ * Throws an error if used outside of a NotesProvider.
+ */
 export const useNotes = () => {
   const context = useContext(NotesContext);
-  if (!context) throw new Error("useNotes must be used within NotesProvider");
+  if (!context) {
+    throw new Error("useNotes must be used within a NotesProvider");
+  }
   return context;
 };
