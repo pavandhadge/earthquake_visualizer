@@ -94,7 +94,7 @@ export function NotesPanel() {
       {state === "minimized" && (
         <div
           onClick={open}
-          className="fixed bottom-6 right-6 w-72 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-3 rounded-xl shadow-2xl cursor-pointer flex items-center justify-between z-[1000] transition-all hover:shadow-3xl hover:-translate-y-1"
+          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-72 bg-gradient-to-br from-blue-600 to-teal-500 text-white p-3 rounded-xl shadow-2xl cursor-pointer flex items-center justify-between z-[1000] transition-all hover:shadow-3xl hover:-translate-y-1"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
@@ -120,7 +120,7 @@ export function NotesPanel() {
       )}
 
       {state === "open" && (
-        <div className="fixed bottom-6 right-6 w-[420px] h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-[1000] overflow-hidden">
+        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100%-2rem)] sm:w-[420px] h-[60vh] sm:h-[520px] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col z-[1000] overflow-hidden">
           <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
             <h3 className="font-bold text-gray-800 text-base ml-2">Notes</h3>
             <div className="flex items-center gap-1">
@@ -137,7 +137,7 @@ export function NotesPanel() {
                 className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 font-semibold text-sm ${notes.trim() ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-200 text-gray-400 cursor-not-allowed"}`}
               >
                 <SaveIcon />
-                <span>Save</span>
+                <span className="hidden sm:inline">Save</span>
               </button>
               <button
                 onClick={minimize}
@@ -183,7 +183,7 @@ export function NotesPanel() {
       )}
 
       {showSaved && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-gray-900 bg-opacity-60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
           <SavedNotesModal
             onClose={() => setShowSaved(false)}
             onSelect={handleSelectNote}
