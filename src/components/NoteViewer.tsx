@@ -1,5 +1,5 @@
 // src/components/NoteViewer.tsx
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 interface Props {
   title: string;
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export function NoteViewer({ title, content, timestamp, onBack }: Props) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 p-6">

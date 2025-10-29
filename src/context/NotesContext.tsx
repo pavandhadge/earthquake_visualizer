@@ -1,11 +1,6 @@
 // src/context/NotesContext.tsx
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { db } from "../db";
 import type { Note } from "../db";
 

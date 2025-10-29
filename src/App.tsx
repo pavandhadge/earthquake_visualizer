@@ -10,7 +10,7 @@ import { Header } from "./components/Header";
 import useEarthQuakeData from "./components/dataRequest";
 // import sqliteManager from "./db/sqliteManager";
 import { NotesDashboard } from "./components/NotesDashboard";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 /**
  * MapView component is the primary view for the earthquake map.
