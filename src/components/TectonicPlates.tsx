@@ -1,75 +1,71 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import React from "react";
 import { GeoJSON } from "react-leaflet";
 import type { FeatureCollection } from "geojson";
 
-const TECTONIC_PLATES_URL =
+const URL =
   "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
-interface TectonicPlatesProps {
-  offset?: number;
+interface Props {
+  offset: number;
 }
 
-const transformCoordinates = (geometry: any, offset: number) => {
-  switch (geometry.type) {
+/** Transform a single geometry – runs only when offset changes */
+const transform = (geom: any, offset: number) => {
+  if (!offset) return geom.coordinates;
+  switch (geom.type) {
     case "LineString":
-      return geometry.coordinates.map((point: number[]) => [
-        point[0] + offset,
-        point[1],
-      ]);
+      return geom.coordinates.map(([x, y]: number[]) => [x + offset, y]);
     case "MultiLineString":
-      return geometry.coordinates.map((line: number[][]) =>
-        line.map((point: number[]) => [point[0] + offset, point[1]]),
+      return geom.coordinates.map((line: number[][]) =>
+        line.map(([x, y]) => [x + offset, y]),
       );
     default:
-      return geometry.coordinates;
+      return geom.coordinates;
   }
 };
 
-const TectonicPlates = ({ offset = 0 }: TectonicPlatesProps) => {
-  const [plates, setPlates] = useState<FeatureCollection | null>(null);
+const TectonicPlates = ({ offset }: Props) => {
+  const [raw, setRaw] = useState<FeatureCollection | null>(null);
 
+  // ---------- fetch once ----------
   useEffect(() => {
-    const fetchPlates = async () => {
-      try {
-        const response = await fetch(TECTONIC_PLATES_URL);
-        if (!response.ok) {
-          throw new Error("Failed to fetch tectonic plates data");
-        }
-        const data = await response.json();
-        setPlates(data);
-      } catch (error) {
-        console.error(error);
-      }
+    let cancelled = false;
+    fetch(URL)
+      .then((r) => r.json())
+      .then((d) => !cancelled && setRaw(d))
+      .catch(console.error);
+    return () => {
+      cancelled = true;
     };
-
-    fetchPlates();
   }, []);
 
-  if (!plates) return null;
+  // ---------- memoised transformed GeoJSON ----------
+  const data = useMemo(() => {
+    if (!raw) return null;
+    if (!offset) return raw;
 
-  const transformedPlates =
-    offset !== 0
-      ? {
-          ...plates,
-          features: plates.features.map((feature) => ({
-            ...feature,
-            geometry: {
-              ...feature.geometry,
-              coordinates: transformCoordinates(feature.geometry, offset),
-            },
-          })),
-        }
-      : plates;
+    return {
+      ...raw,
+      features: raw.features.map((f) => ({
+        ...f,
+        geometry: {
+          ...f.geometry,
+          coordinates: transform(f.geometry, offset),
+        },
+      })),
+    };
+  }, [raw, offset]);
+
+  if (!data) return null;
 
   return (
     <GeoJSON
-      data={transformedPlates}
-      style={{
-        color: "#ff7800",
-        weight: 2,
-      }}
+      key={offset} // forces Leaflet to reuse the layer when offset changes
+      data={data}
+      style={{ color: "#ff7800", weight: 2 }}
     />
   );
 };
 
-export default TectonicPlates;
+export default React.memo(TectonicPlates);
